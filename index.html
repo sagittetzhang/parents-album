@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>家庭相册 - 珍藏我们的温馨回忆</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Integrations -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Playfair+Display:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Noto Serif SC"', 'serif'],
+            display: ['"Playfair Display"', '"Noto Serif SC"', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Noto Serif SC', Georgia, Cambria, "Times New Roman", Times, serif;
+      background-color: #fbfaf7;
+      background-image: radial-gradient(#e5e1da 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    
+    .polaroid-card {
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .polaroid-card:hover {
+      transform: scale(1.06) rotate(0deg) !important;
+      z-index: 40;
+      box-shadow: 0 25px 50px -12px rgba(139, 92, 26, 0.15);
+    }
+  </style>
+</head>
+<body class="min-h-screen text-[#333333] selection:bg-amber-100 selection:text-amber-900 flex flex-col justify-between">
+
+  <!-- Password Protection Lock Screen Overlay -->
+  <div id="lockScreen" class="fixed inset-0 bg-[#fbfaf7] z-[100] flex flex-col items-center justify-center p-6 text-center font-serif">
+    <!-- Retro seal or lock -->
+    <div class="max-w-md w-full bg-white border border-amber-200 p-8 rounded-3xl shadow-2xl relative">
+      <div class="inline-flex items-center justify-center p-4 bg-amber-50 rounded-full mb-4 text-amber-800">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-amber-950 mb-2">时光回忆锁</h2>
+      <p class="text-xs text-gray-500 mb-6 leading-relaxed">
+        这是我们深爱的家庭温暖瞬间汇集地。本画册已被管理者设置访问密码保护，请输入浏览口令进行解锁：
+      </p>
+      
+      <div class="space-y-4">
+        <div class="relative flex items-center">
+          <input 
+            type="password" 
+            id="viewPassInput" 
+            placeholder="请输入浏览访问密码" 
+            class="w-full text-center tracking-widest text-sm pl-10 pr-10 py-2.5 bg-gray-50 border border-amber-200 rounded-xl focus:outline-none focus:border-amber-600 focus:bg-white transition-all font-serif"
+            onkeydown="if(event.key==='Enter') verifyViewPassword()"
+          >
+          <button 
+            type="button" 
+            onclick="togglePassVisibility()" 
+            class="absolute right-3 p-1.5 text-gray-400 hover:text-amber-800 focus:outline-none cursor-pointer flex items-center justify-center"
+            title="显示/隐藏密码"
+          >
+            <!-- Eye Open Icon (Visible by default) -->
+            <svg id="eyeIconOpen" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <!-- Eye Closed Icon (Hidden by default) -->
+            <svg id="eyeIconClosed" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+              <line x1="1" y1="1" x2="23" y2="23"></line>
+            </svg>
+          </button>
+        </div>
+        <button 
+          onclick="verifyViewPassword()"
+          class="w-full py-2.5 bg-amber-700 hover:bg-amber-800 text-white font-bold text-sm rounded-xl shadow-md transition-all active:scale-[0.98] duration-100 cursor-pointer"
+        >
+          解密温情并进入相册 ✦ Decrypt
+        </button>
+        <p id="lockErrorMsg" class="text-xs text-red-500 font-bold hidden"></p>
+        <p id="lockHintMsg" class="text-[11px] text-gray-400 mt-2 italic font-sans"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Section -->
+  <header class="py-12 px-6 text-center max-w-4xl mx-auto">
+    <div class="inline-flex items-center justify-center space-x-2 text-amber-800 font-display italic text-lg tracking-widest mb-3 opacity-90">
+      <span>✦</span>
+      <span>Our Parents</span>
+      <span>✦</span>
+    </div>
+    <h1 class="text-4xl md:text-5xl font-bold font-serif text-amber-950 mb-4 tracking-widest relative inline-block">
+      家庭相册
+      <div class="absolute -bottom-2 left-1/4 right-1/4 h-[2px] bg-gradient-to-r from-transparent via-amber-800 to-transparent"></div>
+    </h1>
+    <p class="text-sm md:text-base text-gray-600 mt-5 font-serif max-w-lg mx-auto leading-relaxed italic">
+      「时光会流逝，岁月会更迭，回忆和纪念。」
+    </p>
+
+    <!-- Toolbar / Controls -->
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <button 
+        onclick="openUploadModal()"
+        class="group flex items-center gap-2 px-5 py-2.5 bg-amber-700 hover:bg-amber-800 text-white text-sm font-semibold rounded-full shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 click:outline-none"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        添加新回忆 (上传照片)
+      </button>
+      
+      <button 
+        onclick="resetToDefault()"
+        class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-amber-50 text-gray-500 hover:text-amber-900 border border-amber-200 text-sm font-medium rounded-full shadow-sm transition-all active:scale-95"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M3 21v-5h5"/></svg>
+        重置默认照片
+      </button>
+
+      <button 
+        id="btnOwnerToggle"
+        onclick="toggleOwnerMode()"
+        class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-amber-50 text-amber-805 border border-amber-200 text-sm font-medium rounded-full shadow-sm transition-all active:scale-95 cursor-pointer"
+      >
+        <svg id="ownerBadgeIcon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-705"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span id="ownerBadgeText">验证管理者身份</span>
+      </button>
+
+      <button 
+        onclick="lockAlbum()"
+        class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-amber-50 text-gray-600 hover:text-amber-900 border border-amber-200 text-sm font-medium rounded-full shadow-sm transition-all active:scale-95 cursor-pointer"
+        title="手动锁定相册以测试解锁密码"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-800 animate-bounce"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <span>安全上锁 (测试解锁)</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Photo Album Gallery -->
+  <main class="w-full max-w-7xl mx-auto px-6 py-4 flex-grow">
+    <!-- Dynamic Folders Cabinet Section -->
+    <div id="foldersCabinet" class="mb-10"></div>
+
+    <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
+      <!-- Generated Dynamically -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden flex-col items-center justify-center text-center py-20 px-6 border-2 border-dashed border-amber-200 rounded-2xl bg-white max-w-md mx-auto shadow-sm">
+      <div class="p-4 bg-amber-50 rounded-full mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" stroke="#b45309" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+      </div>
+      <h3 class="text-base font-bold text-gray-800 font-serif mb-1">相册空空如也</h3>
+      <p class="text-xs text-gray-500 max-w-xs mb-5">点击上方的「添加新回忆」上传照片，开始编织您家庭的美好卷轴吧！</p>
+      <button 
+        onclick="openUploadModal()"
+        class="px-4 py-1.5 bg-amber-700 hover:bg-amber-805 text-white rounded-lg text-xs font-semibold shadow"
+      >
+        立即上传照片
+      </button>
+    </div>
+  </main>
+
+  <!-- Footer Section -->
+  <footer class="mt-20 border-t border-[#e5e1da] bg-[#fbfaf7] py-8 px-6 text-center">
+    <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="text-xs text-gray-500 font-serif text-left">
+        <p class="font-bold text-amber-900 mb-0.5">我们的家庭影集</p>
+        <p>© 2026 Family Scrapbook.</p>
+      </div>
+      
+      <div class="flex items-center gap-3 flex-wrap justify-center">
+        <button 
+          id="btnDownloadOfflineHTML"
+          onclick="downloadOfflineUpdatedHTML()"
+          class="flex items-center gap-2 px-5 py-2.5 bg-amber-700 hover:bg-amber-800 text-white font-semibold text-sm rounded-full shadow hover:shadow-md transition-all cursor-pointer"
+          title="将您新增或修改后的所有相册照片数据，打包并下载为一个全新的 standalone 完整单页面 html 网页文件！"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          一键打包提取全新 HTML 档
+        </button>
+
+        <button 
+          onclick="openContactModal()"
+          class="flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-amber-50 text-amber-900 border border-amber-200 font-semibold text-sm rounded-full shadow hover:shadow-md transition-all cursor-pointer"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-700"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          联络我 (咨询与留言)
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating Mouse Detail Tooltip -->
+  <div 
+    id="hoverBox" 
+    class="fixed pointer-events-none opacity-0 scale-95 origin-top-left transition-all duration-200 z-50 bg-white/95 backdrop-blur-md border border-amber-200 p-5 rounded-2xl shadow-xl max-w-sm w-80 text-left font-serif text-gray-800"
+    style="top: 0px; left: 0px;"
+  >
+    <div class="flex items-center gap-2 text-amber-800 text-xs font-bold mb-1.5">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span id="hoverLocation">垦丁白沙湾</span>
+    </div>
+    <h4 id="hoverTitle" class="text-lg font-bold text-gray-900 mb-1 leading-tight">照片标题</h4>
+    <div id="hoverDate" class="text-xs text-gray-400 font-mono mb-3">2026年06月18日</div>
+    <p id="hoverDescription" class="text-xs text-gray-605 leading-relaxed text-justify font-serif">
+      照片详细故事与温暖介绍...
+    </p>
+    <div class="mt-3 pt-2.5 border-t border-dashed border-amber-100 flex items-center justify-between text-[10px] text-amber-800 font-serif">
+      <span>✦ 点击卡片可放大阅读 ✦</span>
+      <span class="bg-amber-50 px-1.5 py-0.5 rounded text-amber-900">Scrapbook</span>
+    </div>
+  </div>
+
+  <!-- Contacts Dialogue / Popup Modal -->
+  <div id="contactModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-amber-200/40 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-left">
+      <div class="bg-[#fbfaf7] border-b border-[#e5e1da] text-gray-800 p-6 relative">
+        <button onclick="closeContactModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-750 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        <span class="text-xs tracking-widest text-amber-700 uppercase font-mono">Contact Us</span>
+        <h3 class="text-2xl font-bold font-serif text-amber-900 mt-1">与我联络</h3>
+        <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+          欢迎您在此留下温馨字句。点击发送将自动为您拉起邮件软件，把留言投递至 <strong>sagittet.zhang@gmail.com</strong>。
+        </p>
+      </div>
+
+      <div class="p-6 font-serif">
+        <form onsubmit="handleContactSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1">您的姓名</label>
+            <input type="text" id="contactName" required placeholder="例如：美玲" class="w-full text-sm px-3.5 py-2 bg-white border border-gray-200 text-gray-800 rounded-lg focus:outline-none focus:border-amber-600 transition-colors">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1">电子信箱</label>
+            <input type="email" id="contactEmail" required placeholder="family@example.com" class="w-full text-sm px-3.5 py-2 bg-white border border-gray-200 text-gray-800 rounded-lg focus:outline-none focus:border-amber-600 transition-colors">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1">给我们的温馨话语</label>
+            <textarea id="contactMessage" required rows="3" placeholder="在这里写下您想对我们说的话，或您的家庭故事..." class="w-full text-sm px-3.5 py-2 bg-white border border-gray-200 text-gray-800 rounded-lg focus:outline-none focus:border-amber-600 transition-colors"></textarea>
+          </div>
+          <button 
+            type="submit"
+            class="w-full py-2.5 bg-amber-700 hover:bg-amber-800 text-white font-bold text-sm rounded-lg shadow transition-all duration-150 transform active:scale-[0.99]"
+          >
+            发送温暖留言
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Dialogue / Popup Modal -->
+  <div id="uploadModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-amber-200/40 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-left">
+      <div class="bg-[#fbfaf7] border-b border-[#e5e1da] text-gray-800 p-6 relative">
+        <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-750 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-full transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        <span class="text-xs tracking-widest text-amber-700 uppercase font-mono">Upload Memories</span>
+        <h3 class="text-2xl font-bold font-serif text-amber-900 mt-1">添加新的家庭回忆</h3>
+        <p class="text-xs text-gray-500 mt-1 leading-relaxed">
+          挑选一张代表幸福的照片，并记录下背后的感人光景。
+        </p>
+      </div>
+
+      <div class="p-6 font-serif max-h-[80vh] overflow-y-auto space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-amber-800 mb-1.5">第一步：选择家庭照片文件</label>
+          <div class="flex items-center justify-center w-full">
+            <label id="uploadDropzone" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer bg-gray-50/50 hover:bg-amber-50/30 hover:border-amber-450 transition-all p-4 text-center">
+              <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                <p id="fileNameLabel" class="text-xs text-gray-650 font-semibold"><span class="text-amber-700 underline">点击此处</span> 选择照片，或拖入文件至此</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">支持 PNG, JPG, WEBP 等格式</p>
+              </div>
+              <input type="file" id="photoFileInput" accept="image/*" onchange="previewSelectedPhoto(this)" class="hidden">
+            </label>
+          </div>
+          <div id="imagePreviewContainer" class="hidden mt-3 p-2 bg-white rounded-lg border border-gray-100 flex items-center gap-3 shadow-md">
+            <img id="imagePreview" src="" class="w-16 h-16 object-cover rounded shadow-inner">
+            <div class="flex-grow">
+              <p class="text-xs font-bold text-gray-800">预览就绪</p>
+              <p class="text-[10px] text-gray-400">已准备好将此相片写入您的本地相册。</p>
+            </div>
+            <button onclick="clearSelectedPhoto()" class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1">清除</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-amber-800 mb-1">相册标题</label>
+            <input type="text" id="photoTitleInput" required placeholder="例如：全家福第一号" class="w-full text-sm px-3.5 py-2 bg-white border border-gray-200 text-gray-805 rounded-lg focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-605/20 transition-all">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-amber-800 mb-1">拍摄时间</label>
+            <input type="text" id="photoDateInput" placeholder="例如：2026 年 06 月" class="w-full text-sm px-3.5 py-2 bg-white border border-gray-200 text-gray-805 rounded-lg focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-605/20 transition-all">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-amber-800 mb-1">拍摄地点</label>
+          <input type="text" id="photoLocationInput" placeholder="例如：九份老街、客厅、后院" class="w-full text-sm px-3.5 py-2 bg-white border border-gray-200 text-gray-805 rounded-lg focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-605/20 transition-all">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-amber-800 mb-1">照片描述 (故事详情)</label>
+          <textarea id="photoDescInput" rows="3" placeholder="为您这张照片写下感人的故事，字数越多，悬停框展示越有温度..." class="w-full text-sm px-3.5 py-2 bg-white border border-gray-200 text-gray-805 rounded-lg focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-605/20 transition-all"></textarea>
+        </div>
+
+        <div class="pt-2">
+          <button 
+            type="button"
+            onclick="addNewPhotoSubmit()"
+            class="w-full py-2.5 bg-amber-700 hover:bg-amber-800 text-white font-bold text-sm rounded-lg shadow-md transition-all transform active:scale-95"
+          >
+            将这段时光写入岁月 ✦ 新增
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Polaroid Viewer (Big Modal) -->
+  <div id="viewModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4" onclick="closeViewModal()">
+    <div class="ax-w-2xl w-full bg-white p-4 md:p-6 rounded-2xl shadow-2xl border border-amber-200/40 relative animate-in zoom-in-95 duration-200 text-left font-serif" onclick="event.stopPropagation()">
+      <button onclick="closeViewModal()" class="absolute top-4 right-4 bg-black/60 hover:bg-amber-700 hover:text-white text-white p-2 rounded-full transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+      <div class="flex flex-col md:flex-row gap-6">
+        <div class="w-full md:w-1/2 flex items-center justify-center bg-gray-50 border border-gray-100 rounded p-2">
+          <img id="modalImg" src="" alt="大图" class="max-h-[350px] object-contain shadow-md rounded">
+        </div>
+        <div class="w-full md:w-1/2 flex flex-col justify-between font-serif py-2">
+          <div>
+            <div class="flex items-center gap-2 text-amber-800 text-xs font-bold mb-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span id="modalLocation">地点</span>
+            </div>
+            <h4 id="modalTitle" class="text-2xl font-bold text-gray-900 mb-1.5 font-serif">标题</h4>
+            <div id="modalDate" class="text-xs text-gray-400 font-mono mb-4">日期</div>
+            <p id="modalDescription" class="text-sm text-gray-655 leading-relaxed text-justify">
+              故事内容
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-amber-100 flex items-center justify-between text-xs text-amber-800">
+            <span>Our Beloved Family Memories</span>
+            <span>✦ 凝结瞬间 ✦</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Core Script Section -->
+  <script>
+    // Initial static list inject
+    const DEFAULT_PHOTOS = [
+  {
+    "id": "1",
+    "title": "暖陽沙灘的散步",
+    "date": "2024 年 07 月 15 日",
+    "location": "墾丁白沙灣",
+    "description": "全家人在黃昏的沙灘上，留下了這排長長的腳印。那天波光粼粼、微風徐徐。爺爺和奶奶牽著手走在前面，孩子們在浪花裡奔跑，那一刻時間彷彿慢了下來，空氣中全是海鹽與幸福的味道。",
+    "imageUrl": "https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=800&auto=format&fit=crop",
+    "rotation": -1.5
+  },
+  {
+    "id": "2",
+    "title": "客廳壁爐下的歡笑",
+    "date": "2023 年 12 月 24 日",
+    "location": "陽明山老家",
+    "description": "聖誕夜前夕，老家客廳裡點起了暖和的橘黃燈光。孩子們圍在暖爐旁，一邊喝著奶奶親手熬煮、飄著肉桂香氣的熱巧克力，一邊聽著爺爺講述他年輕時的冒險故事。壁爐旁掛著長襪，滿屋子都是快樂的笑聲。",
+    "imageUrl": "https://images.unsplash.com/photo-1543807535-eceef0bc6599?q=80&w=800&auto=format&fit=crop",
+    "rotation": 2.2
+  },
+  {
+    "id": "3",
+    "title": "春櫻綻放的草地野餐",
+    "date": "2024 年 04 月 06 日",
+    "location": "台中科博館綠園道",
+    "description": "趁著春光明媚、晴空萬里的午後，我們鋪起紅格子野餐墊，帶上裝滿三明治和新鮮草莓的竹編籃。微風吹過，幾片粉嫩櫻花瓣悄悄落入茶杯裡，這是春天贈予我們一家人最溫柔的禮物。",
+    "imageUrl": "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?q=80&w=800&auto=format&fit=crop",
+    "rotation": -2.5
+  },
+  {
+    "id": "4",
+    "title": "爺爺奶奶的金婚紀念",
+    "date": "2023 年 10 月 28 日",
+    "location": "九份山城觀海茶樓",
+    "description": "慶祝爺爺與奶奶相伴走過金婚五十週年！全體家族成員齊聚一堂。奶奶穿上了她最喜愛的紅色旗袍，爺爺則難得打起了領帶。兩人互相注視時的深情與笑意，讓我們大家真切地看見了什麼是真正白頭偕老的幸福。",
+    "imageUrl": "https://images.unsplash.com/photo-1472586662442-3eec04b9dbda?q=80&w=800&auto=format&fit=crop",
+    "rotation": 1.8
+  }
+];
+    const VIEW_PASSWORD = "zhang".trim();
+    const OWNER_PASSWORD = "P@ssw0rd".trim();
+
+    let photos = [];
+    let selectedImageBase64 = '';
+    let selectedFolder = 'all';
+    let isOwnerMode = false;
+
+    // Crash-proof storage proxies for file:/// protocol compatibility
+    function safeGetSession(key) {
+      try { return sessionStorage.getItem(key); } catch (e) { return null; }
+    }
+    function safeSetSession(key, value) {
+      try { sessionStorage.setItem(key, value); } catch (e) {}
+    }
+    function safeRemoveSession(key) {
+      try { sessionStorage.removeItem(key); } catch (e) {}
+    }
+    function safeGetLocal(key) {
+      try { return localStorage.getItem(key); } catch (e) { return null; }
+    }
+    function safeSetLocal(key, value) {
+      try { localStorage.setItem(key, value); } catch (e) {}
+    }
+
+     // Password Lock screen helpers
+    function togglePassVisibility() {
+      const input = document.getElementById('viewPassInput');
+      const eyeOpen = document.getElementById('eyeIconOpen');
+      const eyeClosed = document.getElementById('eyeIconClosed');
+      if (!input || !eyeOpen || !eyeClosed) return;
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        eyeOpen.style.display = 'none';
+        eyeClosed.style.display = 'block';
+      } else {
+        input.type = 'password';
+        eyeOpen.style.display = 'block';
+        eyeClosed.style.display = 'none';
+      }
+    }
+
+    function verifyViewPassword() {
+      const inputEl = document.getElementById('viewPassInput');
+      if (!inputEl) return;
+      const userInput = inputEl.value.trim();
+      console.log('[Family Album] Verifying view password...', { 
+        userInputLength: userInput.length, 
+        expectedLength: VIEW_PASSWORD.length 
+      });
+      
+      if (userInput === VIEW_PASSWORD) {
+        console.log('[Family Album] Correct password! Unlocking...');
+        safeSetSession('family_unlocked_static', 'true');
+        const lockScreen = document.getElementById('lockScreen');
+        if (lockScreen) {
+          lockScreen.style.display = 'none';
+        }
+      } else {
+        console.warn('[Family Album] Incorrect password entered.', {
+          enteredLength: userInput.length,
+          expectedLength: VIEW_PASSWORD.length
+        });
+        const errMsg = document.getElementById('lockErrorMsg');
+        if (errMsg) {
+          errMsg.style.display = 'block';
+          errMsg.innerHTML = '您的密码输入有误差，请确认再试喔 ✦<br><span class="text-[10px] font-sans text-gray-500 font-normal block mt-1.5 p-1 bg-amber-50 rounded border border-amber-100">（诊断提示：您输入了 ' + userInput.length + ' 位，相册设定的口令为 ' + VIEW_PASSWORD.length + ' 位）</span>';
+        }
+      }
+    }
+
+    function toggleOwnerMode() {
+      if (isOwnerMode) {
+        if (confirm('确定要退出管理者模式，返回纯浏览的访客状态吗？')) {
+          isOwnerMode = false;
+          safeRemoveSession('family_owner_static');
+          updateOwnerUi();
+          alert('已退出管理者模式，当前为纯浏览访客状态。');
+        }
+      } else {
+        const password = prompt('请输入管理者密码以解锁编辑与删除权限：');
+        if (password === null) return;
+        
+        if (password === OWNER_PASSWORD) {
+          isOwnerMode = true;
+          safeSetSession('family_owner_static', 'true');
+          updateOwnerUi();
+          alert('管理者管理特权激活成功！现在您可以自由上传、重置或单张删除相片。');
+        } else {
+          alert('密码验证有误，无法启用管理者特权喔～');
+        }
+      }
+    }
+
+    function lockAlbum() {
+      safeRemoveSession('family_unlocked_static');
+      safeRemoveSession('family_owner_static');
+      isOwnerMode = false;
+      const lockScreen = document.getElementById('lockScreen');
+      if (lockScreen) {
+        lockScreen.style.display = 'flex';
+      }
+      const viewPassInput = document.getElementById('viewPassInput');
+      if (viewPassInput) {
+        viewPassInput.value = '';
+      }
+      const errMsg = document.getElementById('lockErrorMsg');
+      if (errMsg) {
+        errMsg.style.display = 'none';
+      }
+      updateOwnerUi();
+      alert('已成功进行安全上锁！现在您已处于完全锁定状态，可以安全测试您的访问密码了 ✦');
+    }
+
+    function updateOwnerUi() {
+      const btnToggle = document.getElementById('btnOwnerToggle');
+      const badgeIcon = document.getElementById('ownerBadgeIcon');
+      const badgeText = document.getElementById('ownerBadgeText');
+      
+      if (isOwnerMode) {
+        btnToggle.className = "flex items-center gap-2 px-4 py-2 bg-amber-800 text-white border border-amber-900 text-sm font-semibold rounded-full shadow-md transition-all active:scale-95 cursor-pointer";
+        badgeIcon.innerHTML = '<rect width="18" height="11" x="3" y="11" rx="2" ry="2" fill="currentColor" stroke="none"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>';
+        badgeText.innerText = "管理者特权：已激活 ✦";
+      } else {
+        btnToggle.className = "flex items-center gap-2 px-4 py-2 bg-white hover:bg-amber-50 text-amber-800 border border-amber-200 text-sm font-medium rounded-full shadow-sm transition-all active:scale-95 cursor-pointer";
+        badgeIcon.innerHTML = '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>';
+        badgeText.innerText = "验证管理者身份";
+      }
+      
+      renderGallery();
+    }
+
+    function getYearFromDate(dateStr) {
+      if (!dateStr || typeof dateStr !== 'string') return '未分类';
+      const match = dateStr.match(/(\d{4})/);
+      return match ? match[1] + ' 年' : '未分类';
+    }
+
+    function selectFolder(year) {
+      selectedFolder = year;
+      renderGallery();
+    }
+
+    // Initialize list from LocalStorage or default
+    function init() {
+      // Check view password protection
+      const hasPassword = VIEW_PASSWORD && VIEW_PASSWORD !== "null" && VIEW_PASSWORD !== "undefined" && VIEW_PASSWORD !== "none" && VIEW_PASSWORD !== "";
+      
+      const lockScreen = document.getElementById('lockScreen');
+      if (hasPassword && safeGetSession('family_unlocked_static') !== 'true') {
+        if (lockScreen) {
+          lockScreen.style.display = 'flex';
+        }
+        const hintEl = document.getElementById('lockHintMsg');
+        if (VIEW_PASSWORD === '1234' && hintEl) {
+          hintEl.innerHTML = '回忆线索：默认出厂访问密码为 <span class="font-bold text-amber-700 px-1 bg-amber-50 rounded">1234</span>';
+        }
+      } else {
+        if (lockScreen) {
+          lockScreen.style.display = 'none';
+        }
+      }
+
+      // Check owner mode session persistence
+      if (safeGetSession('family_owner_static') === 'true') {
+        isOwnerMode = true;
+      }
+
+      const stored = safeGetLocal('family_photos');
+      if (stored) {
+        try {
+          photos = JSON.parse(stored);
+        } catch (e) {
+          photos = DEFAULT_PHOTOS;
+        }
+      } else {
+        photos = DEFAULT_PHOTOS;
+        safeSetLocal('family_photos', JSON.stringify(photos));
+      }
+
+      // Programmatic event listener for Enter key - much more robust on local file:// protocol
+      const viewPassInput = document.getElementById('viewPassInput');
+      if (viewPassInput) {
+        viewPassInput.addEventListener('keydown', function(event) {
+          if (event.key === 'Enter') {
+            verifyViewPassword();
+          }
+        });
+      }
+      
+      updateOwnerUi();
+      setupHoverHandler();
+    }
+
+    // Reset list
+    function resetToDefault() {
+      if (!isOwnerMode) {
+        const pass = prompt('「重置默认照片」需要验证相册管理者权限，请输入管理者（Admin）密码：');
+        if (pass === OWNER_PASSWORD) {
+          isOwnerMode = true;
+          safeSetSession('family_owner_static', 'true');
+          updateOwnerUi();
+        } else {
+          if (pass !== null) alert('密码验证失误，权限未激活。');
+          return;
+        }
+      }
+
+      if (confirm('确定要恢复为原本出厂预设的 4 张温馨老照片吗？(这将会覆盖您自己新增的所有文件喔)')) {
+        photos = DEFAULT_PHOTOS;
+        selectedFolder = 'all';
+        safeSetLocal('family_photos', JSON.stringify(photos));
+        renderGallery();
+        alert('照片重置成功！');
+      }
+    }
+
+    // Render logic
+    function renderGallery() {
+      const grid = document.getElementById('galleryGrid');
+      const empty = document.getElementById('emptyState');
+      const cabinet = document.getElementById('foldersCabinet');
+      grid.innerHTML = '';
+
+      if (photos.length === 0) {
+        grid.classList.add('hidden');
+        empty.classList.remove('hidden');
+        cabinet.classList.add('hidden');
+        return;
+      }
+
+      cabinet.classList.remove('hidden');
+      grid.classList.remove('hidden');
+      empty.classList.add('hidden');
+
+      // Rebuild Folder UI dynamically
+      const yearSet = new Set();
+      photos.forEach(p => {
+        yearSet.add(getYearFromDate(p.date));
+      });
+      const years = Array.from(yearSet).sort((a, b) => b.localeCompare(a));
+
+      // Auto fallback if year does not exist anymore
+      if (selectedFolder !== 'all' && !yearSet.has(selectedFolder)) {
+        selectedFolder = 'all';
+      }
+
+      let foldersHtml = `
+        <div class="bg-amber-50/45 border border-amber-200/50 rounded-2xl p-6 backdrop-blur-sm shadow-sm mb-8 text-left font-serif">
+          <div class="flex items-center gap-2 text-amber-900 font-bold mb-4 text-xs tracking-wider uppercase">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-700">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>时光卷宗柜 / 按拍摄年份分类</span>
+          </div>
+          <div class="flex flex-wrap gap-4 font-serif">
+            <!-- All Folder -->
+            <button
+               onclick="selectFolder('all')"
+               class="flex items-center gap-3 px-5 py-3 rounded-xl border border-dashed transition-all duration-200 cursor-pointer text-left ${
+                 selectedFolder === 'all'
+                   ? 'bg-amber-900 border-amber-955 text-white shadow-md -translate-y-0.5'
+                   : 'bg-white border-amber-200/50 text-gray-700 hover:border-amber-400 hover:bg-amber-50/20'
+               }"
+            >
+              <div class="relative">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${selectedFolder === 'all' ? 'text-amber-200' : 'text-amber-700'}">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-bold font-serif">全部岁月</p>
+                <p class="text-[10px] font-mono mt-0.5 ${selectedFolder === 'all' ? 'text-amber-200' : 'text-gray-400'}">
+                  共 ${photos.length} 张回忆
+                </p>
+              </div>
+            </button>
+      `;
+
+      years.forEach(year => {
+        const count = photos.filter(p => getYearFromDate(p.date) === year).length;
+        const isActive = selectedFolder === year;
+        foldersHtml += `
+          <!-- Year Folder -->
+          <button
+            onclick="selectFolder('${year}')"
+            class="flex items-center gap-3 px-5 py-3 rounded-xl border transition-all duration-200 cursor-pointer text-left ${
+              isActive
+                ? 'bg-amber-850 border-amber-900 text-white shadow-md -translate-y-0.5'
+                : 'bg-white border-amber-100 text-gray-700 hover:border-amber-400 hover:bg-amber-50/20'
+            }"
+          >
+            <div class="relative">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${isActive ? 'text-amber-150' : 'text-amber-600'}">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-bold font-serif">${year}</p>
+              <p class="text-[10px] font-mono mt-0.5 ${isActive ? 'text-amber-200' : 'text-gray-400'}">
+                ${count} 张相片
+              </p>
+            </div>
+          </button>
+        `;
+      });
+
+      foldersHtml += `
+          </div>
+        </div>
+      `;
+
+      cabinet.innerHTML = foldersHtml;
+
+      // Filter photos
+      const filteredPhotos = selectedFolder === 'all'
+        ? photos
+        : photos.filter(p => getYearFromDate(p.date) === selectedFolder);
+
+      filteredPhotos.forEach((photo) => {
+        const rotationStyle = 'transform: rotate(' + photo.rotation + 'deg);';
+        
+        const cardHtml = `
+          <div 
+            id="photo-card-${photo.id}"
+            class="polaroid-card group relative bg-white p-4 pb-7 border border-amber-250/20 shadow-md hover:shadow-xl hover:border-amber-400 cursor-pointer max-w-[270px] w-full"
+            style="${rotationStyle}"
+            onclick="viewPhoto('${photo.id}')"
+            data-title="${encodeURIComponent(photo.title)}"
+            data-date="${encodeURIComponent(photo.date)}"
+            data-location="${encodeURIComponent(photo.location || '')}"
+            data-description="${encodeURIComponent(photo.description)}"
+          >
+            <!-- Delete action button -->
+            ${isOwnerMode ? '<button onclick="deletePhoto(event, \'\${photo.id}\')" class="absolute top-2.5 right-2.5 z-20 bg-black/60 hover:bg-red-600 text-white p-1.5 rounded-full shadow-md drop-shadow opacity-0 group-hover:opacity-100 transition-all active:scale-95" title="删除这张照片"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"/></svg></button>' : ''}
+
+            <!-- Picture area -->
+            <div class="w-full aspect-[4/3] bg-gray-50 overflow-hidden relative border border-gray-150">
+              <img 
+                src="${photo.imageUrl}" 
+                alt="${photo.title}" 
+                loading="lazy" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              >
+            </div>
+
+            <!-- Hand-written caption layout -->
+            <div class="mt-4 text-center font-serif">
+              <h3 class="text-base font-bold text-gray-800 tracking-wide truncate font-serif">${photo.title}</h3>
+              <p class="text-[11px] text-amber-800 italic mt-1 font-mono tracking-wider opacity-85">${photo.date}</p>
+            </div>
+
+            <!-- Soft stamp element -->
+            <div class="absolute bottom-2.5 right-3 opacity-20 text-[9px] font-mono select-none tracking-widest text-[#b45309]">
+              ✦ MEMORY ✦
+            </div>
+          </div>
+        `;
+
+        grid.innerHTML += cardHtml;
+      });
+      
+      setupHoverHandler();
+    }
+
+    // Hover tooltip core mechanics
+    function setupHoverHandler() {
+      const cards = document.querySelectorAll('.polaroid-card');
+      const hoverBox = document.getElementById('hoverBox');
+      const hoverTitle = document.getElementById('hoverTitle');
+      const hoverDate = document.getElementById('hoverDate');
+      const hoverLocation = document.getElementById('hoverLocation');
+      const hoverDescription = document.getElementById('hoverDescription');
+
+      cards.forEach(card => {
+        card.addEventListener('mouseenter', (e) => {
+          const title = decodeURIComponent(card.getAttribute('data-title'));
+          const date = decodeURIComponent(card.getAttribute('data-date'));
+          const location = decodeURIComponent(card.getAttribute('data-location'));
+          const description = decodeURIComponent(card.getAttribute('data-description'));
+
+          hoverTitle.innerText = title;
+          hoverDate.innerText = date;
+          hoverLocation.innerText = location || '温馨地点';
+          hoverDescription.innerText = description || '无描述';
+
+          // Position setup
+          hoverBox.classList.remove('opacity-0', 'scale-95');
+          hoverBox.classList.add('opacity-100', 'scale-100');
+        });
+
+        card.addEventListener('mousemove', (e) => {
+          // Track mouse beautifully, keeping tooltip offset by 15px to avoid cursor flickering
+          const scrollY = window.scrollY;
+          const scrollX = window.scrollX;
+          const x = e.clientX + 18;
+          const y = e.clientY + 18;
+
+          // Guard boundaries so it does not spill over right/bottom
+          const boxWidth = hoverBox.offsetWidth || 320;
+          const boxHeight = hoverBox.offsetHeight || 220;
+          const screenWidth = window.innerWidth;
+          const screenHeight = window.innerHeight;
+
+          let finalX = x;
+          let finalY = y;
+
+          if (x + boxWidth > screenWidth - 10) {
+            finalX = e.clientX - boxWidth - 15;
+          }
+          if (y + boxHeight > screenHeight - 10) {
+            finalY = e.clientY - boxHeight - 15;
+          }
+
+          hoverBox.style.left = finalX + 'px';
+          hoverBox.style.top = finalY + 'px';
+        });
+
+        card.addEventListener('mouseleave', () => {
+          hoverBox.classList.add('opacity-0', 'scale-95');
+          hoverBox.classList.remove('opacity-100', 'scale-100');
+        });
+      });
+    }
+
+    // Delete photo
+    function deletePhoto(event, id) {
+      event.stopPropagation(); // Avoid opening modal
+
+      // Fade out animation
+      const card = document.getElementById('photo-card-' + id);
+      if (card) {
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.8) translateY(10px)';
+      }
+
+      setTimeout(() => {
+        photos = photos.filter(item => item.id !== id);
+        safeSetLocal('family_photos', JSON.stringify(photos));
+        renderGallery();
+        
+        // Hide hover box to avoid ghost tooltips
+        const hoverBox = document.getElementById('hoverBox');
+        hoverBox.classList.add('opacity-0');
+      }, 350);
+    }
+
+    // Image Upload helper functions
+    function openUploadModal() {
+      if (!isOwnerMode) {
+        const pass = prompt('「添加新回忆」需要验证相册管理者权限，请输入管理者（Admin）密码：');
+        if (pass === OWNER_PASSWORD) {
+          isOwnerMode = true;
+          safeSetSession('family_owner_static', 'true');
+          updateOwnerUi();
+        } else {
+          if (pass !== null) alert('密码校验有误，权限未激活。');
+          return;
+        }
+      }
+      document.getElementById('uploadModal').classList.remove('hidden');
+    }
+
+    // Close Modal View
+    function closeUploadModal() {
+      document.getElementById('uploadModal').classList.add('hidden');
+      clearUploadForm();
+    }
+
+    // Preview photo on select
+    function previewSelectedPhoto(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        document.getElementById('fileNameLabel').innerHTML = '已选取：<span class="text-emerald-700 font-bold">' + file.name + '</span>';
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          selectedImageBase64 = e.target.result;
+          document.getElementById('imagePreview').src = selectedImageBase64;
+          document.getElementById('imagePreviewContainer').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function clearSelectedPhoto() {
+      selectedImageBase64 = '';
+      document.getElementById('photoFileInput').value = '';
+      document.getElementById('imagePreviewContainer').classList.add('hidden');
+      document.getElementById('fileNameLabel').innerHTML = '<span class="text-amber-700 underline font-bold">点击此处</span> 选择照片，或拖入文件至此';
+    }
+
+    function clearUploadForm() {
+      clearSelectedPhoto();
+      document.getElementById('photoTitleInput').value = '';
+      document.getElementById('photoDateInput').value = '';
+      document.getElementById('photoLocationInput').value = '';
+      document.getElementById('photoDescInput').value = '';
+    }
+
+    // Add Photo Submit Action
+    function addNewPhotoSubmit() {
+      const title = document.getElementById('photoTitleInput').value.trim();
+      const rawDate = document.getElementById('photoDateInput').value.trim();
+      const location = document.getElementById('photoLocationInput').value.trim();
+      const description = document.getElementById('photoDescInput').value.trim();
+
+      if (!selectedImageBase64) {
+        alert('请先点击上方按钮上传照片文件才能新增唷！');
+        return;
+      }
+      if (!title) {
+        alert('请填写相片标题，让照片有一个名字。');
+        return;
+      }
+
+      // Format Date
+      let date = rawDate;
+      if (!date) {
+        const now = new Date();
+        date = now.getFullYear() + ' 年 ' + String(now.getMonth() + 1).padStart(2, '0') + ' 月 ' + String(now.getDate()).padStart(2, '0') + ' 日';
+      }
+
+      const newPhoto = {
+        id: 'user_' + Date.now(),
+        title: title,
+        date: date,
+        location: location || '温馨回忆亭',
+        description: description || '幸福就是如此简单，和深爱的人共处，随意笑闹，随意感受生活。这里写下的故事将随风不朽。',
+        imageUrl: selectedImageBase64,
+        rotation: (Math.random() * 6) - 3 // random tilt between -3 and 3
+      };
+
+      photos.unshift(newPhoto); // Put on top of list
+      safeSetLocal('family_photos', JSON.stringify(photos));
+      renderGallery();
+      closeUploadModal();
+      alert('新增家庭记忆成功！照片已成功放入相册 ✦');
+    }
+
+    // Large Zoom View Modal
+    function viewPhoto(id) {
+      const photo = photos.find(p => p.id === id);
+      if (!photo) return;
+
+      document.getElementById('modalImg').src = photo.imageUrl;
+      document.getElementById('modalTitle').innerText = photo.title;
+      document.getElementById('modalLocation').innerText = photo.location || '家庭温情一景';
+      document.getElementById('modalDate').innerText = photo.date;
+      document.getElementById('modalDescription').innerText = photo.description;
+
+      document.getElementById('viewModal').classList.remove('hidden');
+    }
+
+    function closeViewModal() {
+      document.getElementById('viewModal').classList.add('hidden');
+    }
+
+    // Contact modal
+    function openContactModal() {
+      document.getElementById('contactModal').classList.remove('hidden');
+    }
+
+    function closeContactModal() {
+      document.getElementById('contactModal').classList.add('hidden');
+    }
+
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('contactName').value;
+      const email = document.getElementById('contactEmail').value;
+      const msg = document.getElementById('contactMessage').value;
+
+      const subject = encodeURIComponent('家庭相册：来自「' + name + '」的温馨留言');
+      const body = encodeURIComponent('你好！\n\n我是：' + name + '\n我的电子邮箱是：' + email + '\n\n想对你说：\n「' + msg + '」\n\n---\n来自家庭相册联络留言板');
+      
+      const mailtoUrl = 'mailto:sagittet.zhang@gmail.com?subject=' + subject + '&body=' + body;
+      const mailLink = document.createElement('a');
+      mailLink.href = mailtoUrl;
+      mailLink.target = '_blank';
+      mailLink.rel = 'noopener noreferrer';
+      document.body.appendChild(mailLink);
+      mailLink.click();
+      document.body.removeChild(mailLink);
+
+      alert('已为您调起系统邮件软件并准备好发送至 sagittet.zhang@gmail.com 的邮件。在您的邮箱中点击「发送」即可。感谢 ' + name + ' 的温馨留言！');
+      
+      // Clear forms
+      document.getElementById('contactName').value = '';
+      document.getElementById('contactEmail').value = '';
+      document.getElementById('contactMessage').value = '';
+      closeContactModal();
+    }
+
+    // Export & pack everything into a new transferable index.html standalone file
+    function downloadOfflineUpdatedHTML() {
+      try {
+        const scripts = document.querySelectorAll('script');
+        let targetScriptEl = null;
+        let originalScriptText = '';
+        for (const s of scripts) {
+          if (s.textContent && s.textContent.includes('DEFAULT_PHOTOS')) {
+            targetScriptEl = s;
+            originalScriptText = s.textContent;
+            break;
+          }
+        }
+
+        if (!targetScriptEl) {
+          alert('抱歉，未找到核心数据脚本，无法完成一建提取。');
+          return;
+        }
+
+        let updatedScriptText = originalScriptText;
+        
+        // Match and replace DEFAULT_PHOTOS assignment block
+        updatedScriptText = updatedScriptText.replace(
+          /const DEFAULT_PHOTOSs*=s*[s*[sS]*?s*]s*;/g, 
+          'const DEFAULT_PHOTOS = ' + JSON.stringify(photos) + ';'
+        );
+
+        // Temporarily hot swap script content so it shows updated photos in innerHTML 
+        const savedScriptText = targetScriptEl.textContent;
+        targetScriptEl.textContent = updatedScriptText;
+
+        // Extract outer document representation
+        const htmlHeader = '<!DOCTYPE html>\n<html lang="zh-CN">';
+        const htmlBody = document.documentElement.innerHTML;
+        const finalHTML = htmlHeader + htmlBody + '\n</html>';
+
+        // Revert live script block back so context is pristine
+        targetScriptEl.textContent = savedScriptText;
+
+        // Perform the safe download workflow
+        const blob = new Blob([finalHTML], { type: 'text/html;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'index.html');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        alert('✦ 成功生成并下载全新的《家庭相册》温情包 ✦\n\n当前在浏览器中新增、删除或重置的照片，已完美永久集成至新的 index.html 文件中！\n\n您可以直接将该文件打包随处收藏，新打开该文件的任意设备（包括其他人的浏览器）都会默认直接渲染展示您更新过的温暖记忆！');
+      } catch (err) {
+        alert('打包由于以下异常失败了：\n' + err.message);
+      }
+    }
+
+    // Initialize document instantly since scripts are placed at the bottom of the body
+    init();
+  </script>
+</body>
+</html>
